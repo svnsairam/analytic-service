@@ -10,10 +10,12 @@ import java.util.Collection;
 
 
 @Service
-public class ConceptService {
+public class ConceptServiceImpl implements ConceptSerive {
+    private ConceptRepository conceptRepository;
 
-    @Autowired
-    ConceptRepository conceptRepository;
+    public ConceptServiceImpl(ConceptRepository conceptRepository) {
+        this.conceptRepository = conceptRepository;
+    }
 
     public Collection<String> getConcepts() {
         ArrayList<Concept> concepts = new ArrayList<>(conceptRepository.getAllConcepts());

@@ -1,6 +1,10 @@
 package com.stackroute.service;
 
+import com.stackroute.domain.AnalysisResult;
+import com.stackroute.domain.NlpResult;
+import com.stackroute.nlpService.NlpService;
 import com.stackroute.nlpService.NlpServiceImpl;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -8,36 +12,18 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Service
-public class AnalyticServiceImpl {
-    String conceptNames[];
-    ArrayList<String> nouns;
-    ArrayList<String> verbs;
-    NlpServiceImpl nlpService;
+public class AnalyticServiceImpl implements AnalyticService {
+    private String conceptNames[];
+    private NlpResultService nlpResultService;
 
-    public AnalyticServiceImpl(NlpServiceImpl nlpService) {
-        this.nlpService = nlpService;
-        this.nouns = nlpService.getNouns();
-        this.verbs = nlpService.getVerbs();
-    }
-
-    public void setConceptNames(String[] concepts) {
-        this.conceptNames = concepts;
-    }
-
-    public String[] getConceptNames() {
-        return conceptNames;
-    }
-
-    public ArrayList<String> getNouns() {
-        return nouns;
-    }
-
-    public ArrayList<String> getVerbs() {
-        return verbs;
+    @Autowired
+    public AnalyticServiceImpl(NlpResultService nlpResultService) {
+        this.nlpResultService = nlpResultService;
     }
 
     public String getNounSentence() {
         StringBuilder nounSentence = new StringBuilder();
+        ArrayList<String> nouns = new ArrayList<>(nlpResultService.getNlpResult().getNounWords());
         for (int i = 0; i < nouns.size(); i++) {
             nounSentence.append(nouns.get(i) + " ");
         }
@@ -71,20 +57,31 @@ public class AnalyticServiceImpl {
 
     public String getVerbSentence() {
         StringBuilder verbSentence = new StringBuilder();
+        ArrayList<String> verbs = new ArrayList<>(nlpResultService.getNlpResult().getVerbWords());
         for (int i = 0; i < verbs.size(); i++) {
             verbSentence.append(verbs.get(i) + " ");
         }
         return verbSentence.toString().trim().toLowerCase();
     }
 
-    public void showAllResults() {
-        System.out.println("Get Noun Sentence");
-        System.out.println(getNounSentence());
+    public AnalysisResult getAnalysisResult() {
+        AnalysisResult analysisResult = new AnalysisResult();
+        System.out.println("Analytic Service Result in Analytic Service Impl .java");
+        analysisResult.setConfidenceScore(25.5);
+        analysisResult.setDocumentId("D001");
+        analysisResult.setParagraphId("P001");
+        analysisResult.setDomain("spring framework");
+        analysisResult.setIntentLevel("knowledge");
+        analysisResult.setConcept(getConceptName());
+        analysisResult.setParagraphContent(nlpResultService.getNlpResult().getClearedParagraph());
+        return analysisResult;
+    }
 
-        System.out.println("Get Concept Names");
-        System.out.println(getConceptName());
+    public String[] getConceptNames() {
+        return conceptNames;
+    }
 
-        System.out.println("Get Verb Sentence");
-        System.out.println(getVerbSentence());
+    public void setConceptNames(String[] conceptNames) {
+        this.conceptNames = conceptNames;
     }
 }

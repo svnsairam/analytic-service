@@ -3,21 +3,23 @@ package com.stackroute.nlpService;
 import com.aliasi.sentences.IndoEuropeanSentenceModel;
 import com.aliasi.sentences.SentenceModel;
 import com.aliasi.tokenizer.*;
+import com.stackroute.domain.NlpResult;
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.CoreDocument;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.util.CoreMap;
+import org.springframework.stereotype.Service;
 
 import java.util.*;
 
-public class NlpServiceImpl {
+@Service
+public class NlpServiceImpl implements NlpService {
 
-    String paragraph;
-    String paragraphId = "para001";
-    String documentId = "doc001";
-    String stopwords[] = {"i", "me", "my", "myself", "we", "our", "ours", "ourselves", "could", "he'd",
+    private String paragraphContent;
+    private String conceptNames[];
+    private String stopwords[] = {"i", "me", "my", "myself", "we", "our", "ours", "ourselves", "could", "he'd",
             "he'll", "he's", "here's", "how's", "ought", "she'd", "she'll", "that's", "there's", "they'd",
             "they'll", "they're", "they've", "we'd", "we'll", "we're", "we've", "what's", "when's", "where's",
             "who's", "why's", "would", "i'd", "i'll", "i'm", "i've", "you", "you're", "you've", "you'll",
@@ -37,15 +39,8 @@ public class NlpServiceImpl {
             "needn", "needn't", "shan", "shan't", "shouldn", "shouldn't", "wasn", "wasn't", "weren", "weren't",
             "won", "won't", "wouldn", "wouldn't"};
 
-    String[] domainSpecificNgrams = {"annotations", "ioc container", "beans", "spring core", "spring data jpa", "spring datajpa",
-            "spring aop", "spring security", "spring cloud", "spring reactive", "spring mvc"};
-
-    public void setParagraph(String paragraph) {
-        this.paragraph = paragraph;
-    }
-
     public String getCleanerParagrah() {
-        String inputParagraph = this.paragraph;
+        String inputParagraph = getParagraphContent();
         // Data Cleaning by removing extra spaces.
         inputParagraph = inputParagraph.trim();
         inputParagraph = inputParagraph.replaceAll("\\s+", " ");
@@ -119,11 +114,11 @@ public class NlpServiceImpl {
         return lemmaWords;
     }
 
-    public List<String> getStemmedWords() {
+    public ArrayList<String> getStemmedWords() {
         TokenizerFactory tokenizerFactory = IndoEuropeanTokenizerFactory.INSTANCE;
         TokenizerFactory porterFactory = new PorterStemmerTokenizerFactory(tokenizerFactory);
         ArrayList<String> wordTokens = getLemmitizedWords();
-        List<String> stemmedWordsList = new ArrayList<>();
+        ArrayList<String> stemmedWordsList = new ArrayList<>();
         for (String word : wordTokens) {
             Tokenization tokenization = new Tokenization(word, porterFactory);
             stemmedWordsList.add(tokenization.tokenList().toString());
@@ -203,42 +198,43 @@ public class NlpServiceImpl {
         return wordsFrequencyMap;
     }
 
-    public void showAllResults() {
+
+    public NlpResult getNlpResults() {
+        NlpResult nlpResult = new NlpResult();
         System.out.println("Get Cleared Paragraph");
-        String clearedParagraph = new String(getCleanerParagrah());
-        System.out.println(clearedParagraph);
-
+        nlpResult.setClearedParagraph(getCleanerParagrah());
         System.out.println("Get all tokened sentences");
-        ArrayList<String> allSentences = new ArrayList<>(getAllTokenizedSentences());
-        System.out.println(allSentences);
-
-        System.out.println("Lemmitization");
-        ArrayList<String> allLemmas = new ArrayList<>(getLemmitizedWords());
-        System.out.println(allLemmas);
-
-        System.out.println("Stemming");
-        ArrayList<String> allStems = new ArrayList<>(getStemmedWords());
-        System.out.println(allStems);
-
+        nlpResult.setAllTokenedSentences(getAllTokenizedSentences());
+//        System.out.println("Lemmitization");
+//        nlpResult.setLemmaWords(getLemmitizedWords());
+//        System.out.println("Stemming");
+//        nlpResult.setStemmedWords(getStemmedWords());
         System.out.println("Stop Word Removal");
-        ArrayList<String> allStopWords = new ArrayList<>(getWordsWithoutStopWords());
-        System.out.println(allStopWords);
-
+        nlpResult.setWordsWithOutStopWords(getWordsWithoutStopWords());
         System.out.println("Stop Word Removal Paragraph");
-        String paragraphWithOutStopWords = new String(getParagraphWithOutStopWords());
-        System.out.println(paragraphWithOutStopWords);
-
+        nlpResult.setParagraphWithOutStopWords(getParagraphWithOutStopWords());
         System.out.println("POS TAGGING");
-        ArrayList<POSTagging> posTaggings = new ArrayList<>(getPOSWords());
-        System.out.println(posTaggings);
-
+        nlpResult.setPosTaggings(getPOSWords());
         System.out.println("Noun Words");
-        ArrayList<String> nounWords = new ArrayList<>(getNouns());
-        System.out.println(nounWords);
-        // Get all verbs
+        nlpResult.setNounWords(getNouns());
         System.out.println("Verb Words");
-        ArrayList<String> verbWords = new ArrayList<>(getVerbs());
-        System.out.println(verbWords);
+        nlpResult.setVerbWords(getVerbs());
+        return nlpResult;
     }
 
+    public String[] getConceptNames() {
+        return conceptNames;
+    }
+
+    public void setConceptNames(String[] conceptNames) {
+        this.conceptNames = conceptNames;
+    }
+
+    public String getParagraphContent() {
+        return paragraphContent;
+    }
+
+    public void setParagraphContent(String paragraphContent) {
+        this.paragraphContent = paragraphContent;
+    }
 }

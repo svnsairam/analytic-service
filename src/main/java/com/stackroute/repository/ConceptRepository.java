@@ -6,8 +6,7 @@ import org.springframework.data.neo4j.repository.Neo4jRepository;
 
 import java.util.Collection;
 
-public interface ConceptRepository extends Neo4jRepository<Concept,Integer> {
-
+public interface ConceptRepository extends Neo4jRepository<Concept, Integer> {
     @Query("MATCH(u:Concept) RETURN u")
     Collection<Concept> getAllConcepts();
 }

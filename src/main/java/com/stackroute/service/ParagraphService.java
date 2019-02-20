@@ -1,8 +1,9 @@
 package com.stackroute.service;
 
-import org.springframework.stereotype.Service;
+import com.stackroute.domain.Paragraph;
 
-@Service
-public class ParagraphService {
+public interface ParagraphService {
+    public Paragraph getParagraph();
 
+    public void setParagraph(Paragraph paragraph);
 }
